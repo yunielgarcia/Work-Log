@@ -1,5 +1,6 @@
 import os
 import csv
+import datetime
 
 import utils
 from task import Task
@@ -51,13 +52,65 @@ def save_entry(task):
 
 
 # SEARCHING FUNCTIONALITY
+def print_tasks(tasks_list):
+    """Displays result tasks by exact date"""
+    if len(tasks_list) == 0:
+        input("No tasks found. Press enter to return")
+        utils.clean_scr()
+    else:
+        for task in tasks_list:
+            print("Date: " + task['date'])
+            print("Title: " + task['title'])
+            print("Time Spent: " + task['time_spent'])
+            print("Notes : " + task['notes'])
+            if len(tasks_list) > 1:
+                print("------------------------------")
+        input("\n" + "Press enter to return to search menu")
+        utils.clean_scr()
 
 
-def get_desire_date():
+def get_by_exact_date():
+    """Retrieve result tasks by exact date"""
     desire_date = utils.enter_searching_date()
-    print(utils.find_tasks(desire_date))
-#     todo: getting a match but getting OrderedDict ...see print
+    tasks = utils.find_tasks_by_field('date', desire_date)
+    print_tasks(tasks)
 
+
+def get_by_time():
+    """Retrieve result tasks by exact time"""
+    desire_time = utils.enter_searching_time()
+    tasks = utils.find_tasks_by_field('time_spent', desire_time)
+    print_tasks(tasks)
+
+
+def get_by_range():
+    """Retrieve result tasks by date range"""
+    range_dict = utils.enter_searching_date_range()
+
+    # create both datetime obj out of dict
+    dt_start = datetime.datetime.strptime(range_dict['dt_start'], '%d/%m/%Y')
+    dt_end = datetime.datetime.strptime(range_dict['dt_end'], '%d/%m/%Y')
+
+    # let's make a validation for that range
+    if dt_start > dt_end:
+        # Do all again, range is wrong
+        print("Starting date {starting} is greater than ending date {ending}".format(starting=dt_start, ending=dt_end))
+        get_by_range()
+    else:
+        tasks = utils.find_tasks_by_date_range(dt_start, dt_end)
+        print_tasks(tasks)
+
+
+def get_by_string():
+    str_w = input("Enter word or part of if: ")
+    tasks = utils.find_tasks_by_word(str_w)
+    print_tasks(tasks)
+
+
+def get_by_regex():
+    regex = input("Enter your regular expression: ")
+    tasks = utils.find_tasks_by_pattern(regex)
+    print_tasks(tasks)
 
 
 def search_tasks():
@@ -70,16 +123,26 @@ def search_tasks():
     while loop_search:
         print("Do you want to search by:" + "\n")
         search_option = input(utils.print_options(utils.SEARCHING_CRITERIA_ORDER, utils.SEARCHING_CRITERIA))
-        if search_option == 'e':
+        if search_option == 'f':
             utils.clean_scr()
             loop_search = False
         elif search_option == 'a':
             utils.clean_scr()
-            get_desire_date()
+            get_by_exact_date()
         elif search_option == 'b':
             utils.clean_scr()
-            search_tasks()
+            get_by_range()
+        elif search_option == 'c':
+            utils.clean_scr()
+            get_by_string()
+        elif search_option == 'd':
+            utils.clean_scr()
+            get_by_time()
+        elif search_option == 'e':
+            utils.clean_scr()
+            get_by_regex()
         else:
+            utils.clean_scr()
             print('Please select a letter option.')
 
 
